@@ -1,0 +1,16 @@
+# docker-compose.yml
+version: '3.8'
+services:
+  chatgpt-api:
+    image: 'node:16.18.1'
+    restart: unless-stopped
+    user: 'root'
+    working_dir: /app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - .:/app
+    command: 'npm run dev'
+networks:
+  default:
+    name: main
