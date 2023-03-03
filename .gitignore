@@ -1,0 +1,5 @@
+/node_modules
+/html
+/data
+.env
+/web-aircraft-carrier-win32-x64
