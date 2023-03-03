@@ -13,7 +13,7 @@ const useUnofficial = true;
 // types
 // 聊天任务
 export interface ChatTask {
-  taskId: string; // 任务ID
+  id: string; // 任务ID
   snapId: string; // 快照ID，对于每一次onProgress返回的msg，赋予一个新的snapId。主要用于客户端查询最新的msg时比对是否可以使用缓存的msg
   status: 'pending' | 'rejected' | 'resolved'; // 任务状态
   msg?: ChatMessage;
@@ -50,7 +50,7 @@ export async function newChatTask({
 }: NewChatTaskParams) {
   const taskId = nanoid();
   tasks[taskId] = {
-    taskId,
+    id: taskId,
     snapId: nanoid(),
     status: 'rejected',
   };
@@ -61,7 +61,7 @@ export async function newChatTask({
       timeoutMs: 60 * 1000, // 60s超时
       onProgress: (msg) => {
         tasks[taskId] = {
-          taskId,
+          id: taskId,
           snapId: nanoid(),
           status: 'pending',
           msg,
