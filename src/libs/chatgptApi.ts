@@ -6,10 +6,33 @@ import { nanoid } from 'nanoid';
 // ENV
 const debug = false;
 // const debug = true;
+
+// const useUnofficial = false;
 const useUnofficial = true;
 
+// types
+// 聊天任务
+export interface ChatTask {
+  taskId: string; // 任务ID
+  snapId: string; // 快照ID，对于每一次onProgress返回的msg，赋予一个新的snapId。主要用于客户端查询最新的msg时比对是否可以使用缓存的msg
+  status: 'pending' | 'rejected' | 'resolved'; // 任务状态
+  msg?: ChatMessage;
+}
+
+// 创建聊天任务的参数
+export interface NewChatTaskParams {
+  prompt: string;
+  conversationId?: string;
+  parentMessageId?: string;
+}
+
+// 任务集合，内存暂存，用于查询
+const tasks: {
+  [taskId: string]: ChatTask;
+} = {};
+
 // 原始API
-export const chatgptApi = useUnofficial
+const chatgptApi = useUnofficial
   ? new ChatGPTUnofficialProxyAPI({
       accessToken: ACCESS_TOKEN,
       debug,
@@ -19,24 +42,12 @@ export const chatgptApi = useUnofficial
       debug,
     });
 
-export interface ChatTask {
-  taskId: string; // 任务ID
-  snapId: string; // 快照ID，对于每一次onProgress返回的msg，赋予一个新的snapId。主要用于客户端查询最新的msg时比对是否可以使用缓存的msg
-  status: 'pending' | 'rejected' | 'resolved'; // 任务状态
-  msg?: ChatMessage;
-}
-
-// 任务集合，内存暂存，用于查询，自动垃圾清理
-const tasks: {
-  [taskId: string]: ChatTask;
-} = {};
-
 // 新聊天任务
-export async function newChatTask(
-  prompt: string,
-  conversationId?: string,
-  parentMessageId?: string
-) {
+export async function newChatTask({
+  prompt,
+  conversationId,
+  parentMessageId,
+}: NewChatTaskParams) {
   const taskId = nanoid();
   tasks[taskId] = {
     taskId,
@@ -58,18 +69,21 @@ export async function newChatTask(
       },
     })
     .then(() => {
-      Object.assign(tasks[taskId], {
-        status: 'rejected',
-        snapId: nanoid(),
-      });
+      tasks[taskId] &&
+        Object.assign(tasks[taskId], {
+          status: 'rejected',
+          snapId: nanoid(),
+        });
     })
     .catch(() => {
-      Object.assign(tasks[taskId], {
-        status: 'error',
-        snapId: nanoid(),
-      });
+      tasks[taskId] &&
+        Object.assign(tasks[taskId], {
+          status: 'error',
+          snapId: nanoid(),
+        });
     })
     .finally(() => {
+      // 任务的自动清理
       setTimeout(() => {
         delete tasks[taskId];
       }, 3600 * 1000); // 3600s 删除记录
