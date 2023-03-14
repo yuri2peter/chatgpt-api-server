@@ -52,7 +52,7 @@ export async function newChatTask({
   tasks[taskId] = {
     id: taskId,
     snapId: nanoid(),
-    status: 'rejected',
+    status: 'pending',
   };
   chatgptApi
     .sendMessage(prompt, {
@@ -71,16 +71,17 @@ export async function newChatTask({
     .then(() => {
       tasks[taskId] &&
         Object.assign(tasks[taskId], {
-          status: 'rejected',
+          status: 'resolved',
           snapId: nanoid(),
         });
     })
-    .catch(() => {
+    .catch((error) => {
       tasks[taskId] &&
         Object.assign(tasks[taskId], {
-          status: 'error',
+          status: 'rejected',
           snapId: nanoid(),
         });
+      console.warn(error);
     })
     .finally(() => {
       // 任务的自动清理

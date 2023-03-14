@@ -19,6 +19,7 @@ export const main: Controller = (router) => {
   });
 
   router.post('/api/main/new-chat-task', async (ctx: Ctx) => {
+    console.log(ctx.request.body.prompt);
     const taskId = await newChatTask(ctx.request.body as NewChatTaskParams);
     ctx.body = { taskId };
   });

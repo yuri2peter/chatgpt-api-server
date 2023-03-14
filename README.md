@@ -10,6 +10,11 @@ ACCESS_TOKEN=
 
 ```
 
+## 获取 ACCESS_TOKEN
+
+在已登录 chatgpt 的情况下，访问 [https://chat.openai.com/api/auth/session](https://chat.openai.com/api/auth/session)，
+得到一个 json 对象，取`accessToken`字段填入即可。
+
 ## API
 
 ### 新的聊天任务 POST /api/main/new-chat-task
