@@ -7,6 +7,9 @@ import { nanoid } from 'nanoid';
 const debug = false;
 // const debug = true;
 
+// const useLogger = false;
+const useLogger = true;
+
 // const useUnofficial = false;
 const useUnofficial = true;
 
@@ -48,6 +51,7 @@ export async function newChatTask({
   conversationId,
   parentMessageId,
 }: NewChatTaskParams) {
+  logger(`user: ${prompt}`);
   const taskId = nanoid();
   tasks[taskId] = {
     id: taskId,
@@ -74,6 +78,7 @@ export async function newChatTask({
           status: 'resolved',
           snapId: nanoid(),
         });
+      logger(`chatgpt: ${tasks[taskId].msg?.text}`);
     })
     .catch((error) => {
       tasks[taskId] &&
@@ -95,4 +100,16 @@ export async function newChatTask({
 // 查询聊天任务
 export function getChatTaskById(taskId: string): ChatTask | undefined {
   return tasks[taskId];
+}
+
+// 打印日志
+function logger(msg: string) {
+  if (!useLogger) {
+    return;
+  }
+  console.log(
+    `${new Date().toLocaleString('zh-CN', {
+      timeZone: 'Asia/Shanghai',
+    })} ${msg}`
+  );
 }
